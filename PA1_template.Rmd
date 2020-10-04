@@ -1,0 +1,76 @@
+---
+title: "PA1_template.Rmd"
+output: html_document
+---
+
+```{r,echo=TRUE}
+library(knitr)
+library(dplyr)
+data <- read.csv(file = '/home/ritik/activity.csv')
+head(df,20)
+```
+
+```{r,echo=TRUE}
+library(data.table)
+# create data table
+dt <- data.table(data)
+
+# create data frame of total steps
+df <- as.data.frame(dt[, list(total = sum(steps)), by = c("date")])
+
+# plot histogram
+hist(df$total, col=3, main="Histogram of the total number of steps per day", 
+     xlab="Total number of steps per day", border = 3)
+
+```
+```{r,echo=TRUE}
+mean1 <- mean(df$total)
+
+```
+
+```{r,echo=TRUE}
+interval_steps <- aggregate(steps ~ interval, data, mean)
+
+plot(interval_steps$interval, interval_steps$steps, type='l', col=1, 
+     main="Average number of steps averaged across all days", xlab="Interval", 
+     ylab="Average number of steps")
+```
+```{r,echo=TRUE}
+# find row id of maximum average number of steps in an interval
+max_row_id <- which.max(interval_steps$steps)
+
+# get the interval with maximum average number of steps in an interval
+interval_steps [max_row_id, ]
+```
+```{r,echo=TRUE}
+# get rows with NA's
+data_NA <- data[!complete.cases(data),]
+
+# number of rows
+NArows <- nrow(data_NA)
+
+```
+
+
+```{r,echo=TRUE}
+# Create a new dataset that is equal to the original dataset but with the missing data filled in.
+for (i in 1:nrow(df)){
+  if (is.na(data$steps[i])){
+    interval_val <- data$interval[i]
+    row_id <- which(interval_steps$interval == interval_val)
+    steps_val <- interval_steps$steps[row_id]
+    data$steps[i] <- steps_val
+  }
+}
+```
+
+```{r,echo = TRUE}
+# aggregate steps as per date to get total number of steps in a day
+#inserted <- aggregate(steps ~ date, data, sum)
+
+# create histogram of total number of steps in a day
+#hist(inserted$steps, col=3, border = 3, main="(Imputed) Histogram of total number of steps per day", #xlab="Total number of steps in a day")
+```
+
+
+
